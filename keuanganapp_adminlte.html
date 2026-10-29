@@ -1,0 +1,2386 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KeuanganApp - Sistem Informasi Keuangan Pribadi</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome 4.7.0 & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- External Libraries (Chart.js, jsPDF, CryptoJS MD5) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  
+  <style>
+    :root {
+      --primary-green: #0d5c3a;
+      --accent-green: #10b981;
+      --emerald-light: #d1fae5;
+      --gradient-green-gold: linear-gradient(135deg, #059669 0%, #10b981 50%, #f59e0b 100%);
+      --gradient-header: linear-gradient(135deg, #064e3b 0%, #047857 60%, #d97706 100%);
+      --gradient-card-green: linear-gradient(135deg, #065f46 0%, #059669 100%);
+      --gradient-card-teal: linear-gradient(135deg, #0d9488 0%, #10b981 100%);
+      --gradient-card-gold: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+      --gradient-card-dark: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+      --gradient-card-red: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+      --gradient-card-amber: linear-gradient(135deg, #b45309 0%, #f59e0b 100%);
+      --bg-main: #f3f4f6;
+      --sidebar-bg: #064e3b;
+      --sidebar-hover: rgba(255, 255, 255, 0.12);
+      --sidebar-active: #059669;
+      --sidebar-text: #ecfdf5;
+      --text-main: #1f2937;
+      --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      --card-glow: 0 4px 20px rgba(16, 185, 129, 0.15);
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* LOGIN SCREEN STYLES */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gradient-header);
+      padding: 20px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .login-header-box {
+      background: var(--gradient-green-gold);
+      color: #ffffff;
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    .login-header-box i {
+      font-size: 48px;
+      margin-bottom: 12px;
+      color: #fff;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .login-header-box h4 {
+      font-weight: 800;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+
+    .login-header-box p {
+      margin: 4px 0 0 0;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .login-body-box {
+      padding: 32px 28px;
+    }
+
+    /* TOP NAVBAR */
+    .main-header {
+      background: var(--gradient-header);
+      color: #fff;
+      height: 60px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1030;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .main-header .logo {
+      background: rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(5px);
+      width: 250px;
+      height: 60px;
+      line-height: 60px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 20px;
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      letter-spacing: 0.5px;
+      transition: width 0.3s ease;
+    }
+
+    .main-header .sidebar-toggle {
+      color: #fff;
+      padding: 0 18px;
+      cursor: pointer;
+      line-height: 60px;
+      font-size: 20px;
+      transition: all 0.2s;
+    }
+
+    .main-header .sidebar-toggle:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .main-header .navbar-custom-menu {
+      display: flex;
+      align-items: center;
+      padding-right: 20px;
+    }
+
+    .main-header .user-menu {
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 6px 16px;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .main-header .user-menu:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-1px);
+    }
+
+    /* SIDEBAR */
+    .main-sidebar {
+      position: fixed;
+      top: 60px;
+      bottom: 0;
+      left: 0;
+      width: 250px;
+      background: var(--sidebar-bg);
+      background-image: linear-gradient(180deg, #064e3b 0%, #022c22 100%);
+      z-index: 1020;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+      box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+    }
+
+    .user-panel {
+      padding: 20px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .user-panel .img-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--gradient-green-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .user-panel .info {
+      color: #fff;
+    }
+
+    .user-panel .info p {
+      margin: 0;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.3px;
+    }
+
+    .user-panel .info small {
+      color: #a7f3d0;
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 2px;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+      margin: 10px 0;
+      padding: 0 12px;
+    }
+
+    .sidebar-menu .header {
+      color: #6ee7b7;
+      padding: 16px 12px 8px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      opacity: 0.8;
+    }
+
+    .sidebar-menu li {
+      margin-bottom: 4px;
+    }
+
+    .sidebar-menu li a {
+      color: var(--sidebar-text);
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 12px;
+      transition: all 0.25s ease;
+    }
+
+    .sidebar-menu li a:hover {
+      color: #fff;
+      background-color: var(--sidebar-hover);
+      transform: translateX(3px);
+    }
+
+    .sidebar-menu li.active a {
+      color: #fff;
+      background: var(--gradient-green-gold);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+      font-weight: 600;
+    }
+
+    .sidebar-menu li a i {
+      width: 28px;
+      font-size: 16px;
+    }
+
+    /* MAIN CONTENT */
+    .content-wrapper {
+      margin-top: 60px;
+      margin-left: 250px;
+      padding: 28px;
+      min-height: calc(100vh - 60px);
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .content-header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #064e3b;
+      letter-spacing: -0.5px;
+    }
+
+    /* MODERN STAT CARDS */
+    .small-box {
+      border-radius: 20px;
+      position: relative;
+      display: block;
+      margin-bottom: 24px;
+      box-shadow: var(--card-shadow);
+      color: #fff !important;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .small-box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.15);
+    }
+
+    .small-box .inner {
+      padding: 22px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .small-box .inner h3 {
+      font-size: 24px;
+      font-weight: 800;
+      margin: 0 0 6px 0;
+      white-space: nowrap;
+      letter-spacing: -0.5px;
+    }
+
+    .small-box .inner p {
+      font-size: 12px;
+      margin: 0;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      opacity: 0.9;
+    }
+
+    .small-box .icon {
+      position: absolute;
+      top: 15px;
+      right: 18px;
+      z-index: 1;
+      font-size: 55px;
+      color: rgba(255, 255, 255, 0.18);
+      transition: all 0.3s ease;
+    }
+
+    .small-box:hover .icon {
+      transform: scale(1.1) rotate(-5deg);
+      color: rgba(255, 255, 255, 0.28);
+    }
+
+    .small-box .small-box-footer {
+      position: relative;
+      text-align: center;
+      padding: 8px 0;
+      color: rgba(255, 255, 255, 0.9);
+      display: block;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.12);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .small-box .small-box-footer:hover {
+      color: #fff;
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .bg-green-box { background: var(--gradient-card-green) !important; }
+    .bg-teal-box { background: var(--gradient-card-teal) !important; }
+    .bg-gold-box { background: var(--gradient-card-gold) !important; }
+    .bg-dark-box { background: var(--gradient-card-dark) !important; }
+    .bg-red-box { background: var(--gradient-card-red) !important; }
+    .bg-amber-box { background: var(--gradient-card-amber) !important; }
+
+    /* BOX CONTAINER */
+    .box {
+      position: relative;
+      border-radius: 20px;
+      background: #ffffff;
+      margin-bottom: 24px;
+      width: 100%;
+      box-shadow: var(--card-shadow);
+      border: 1px solid #e5e7eb;
+      overflow: hidden;
+    }
+
+    .box-header {
+      color: #064e3b;
+      padding: 18px 24px;
+      position: relative;
+      border-bottom: 1px solid #f3f4f6;
+      background: #fafafa;
+    }
+
+    .box-header .box-title {
+      display: inline-block;
+      font-size: 17px;
+      margin: 0;
+      line-height: 1.2;
+      font-weight: 700;
+    }
+
+    .box-body {
+      padding: 24px;
+    }
+
+    /* TABLES STYLING */
+    .table-responsive {
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .table {
+      margin-bottom: 0;
+    }
+
+    .table th {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background-color: #f8fafc;
+      color: #475569;
+      border-bottom: 2px solid #e2e8f0;
+      padding: 12px 16px;
+    }
+
+    .table td {
+      font-size: 13.5px;
+      padding: 14px 16px;
+      color: #334155;
+      vertical-align: middle;
+    }
+
+    /* MODERN FORM STYLING */
+    .form-field {
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      padding: 10px 14px;
+      font-size: 14px;
+      width: 100%;
+      transition: all 0.2s ease;
+      background-color: #f9fafb;
+    }
+
+    .form-field:focus {
+      border-color: #10b981;
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+      outline: none;
+    }
+
+    label.required::after {
+      content: " *";
+      color: #ef4444;
+      font-weight: bold;
+    }
+
+    /* BUTTONS */
+    .btn {
+      border-radius: 10px;
+      font-weight: 600;
+      padding: 8px 16px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--gradient-green-gold);
+      border: none;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 15px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-action {
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 8px;
+      margin-right: 4px;
+    }
+
+    /* RESPONSIVE TOGGLE */
+    body.sidebar-collapse .main-sidebar {
+      transform: translateX(-250px);
+    }
+    body.sidebar-collapse .content-wrapper {
+      margin-left: 0;
+    }
+
+    @media (max-width: 768px) {
+      .main-sidebar {
+        transform: translateX(-250px);
+      }
+      .content-wrapper {
+        margin-left: 0;
+        padding: 16px;
+      }
+      body.sidebar-open .main-sidebar {
+        transform: translateX(0);
+      }
+    }
+
+    /* TOAST ALERT */
+    #toast-container {
+      position: fixed;
+      top: 75px;
+      right: 20px;
+      z-index: 9999;
+    }
+
+    /* GLASS CALENDAR & STAT CARDS */
+    .glass-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(240,253,244,0.7));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container"></div>
+
+  <!-- 1. LOGIN SCREEN -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-header-box">
+        <i class="fa fa-line-chart"></i>
+        <h4>KeuanganApp</h4>
+        <p>Aplikasi Keuangan Pribadi Terproteksi</p>
+      </div>
+      <div class="login-body-box">
+        <form id="form-login" onsubmit="handleLogin(event)">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Username</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-success"><i class="fa fa-user"></i></span>
+              <input type="text" id="login-username" class="form-field" placeholder="Masukkan username" value="admin" required>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-success"><i class="fa fa-lock"></i></span>
+              <input type="password" id="login-password" class="form-field" placeholder="Masukkan password" value="admin123" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 py-2 fs-6">
+            <i class="fa fa-sign-in me-1"></i> MASUK APLIKASI
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. MAIN APP CONTAINER -->
+  <div id="app-container" class="d-none">
+
+    <!-- TOP NAVBAR -->
+    <header class="main-header">
+      <a href="#" class="logo">
+        <i class="fa fa-line-chart"></i>
+        <span><b>Keuangan</b>App</span>
+      </a>
+      <div class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fa fa-bars"></i>
+      </div>
+      <div class="navbar-custom-menu ms-auto">
+        <div class="dropdown">
+          <a href="#" class="user-menu dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fa fa-user-circle fs-5"></i>
+            <span>Keuangan Pribadi</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 mt-2">
+            <li><a class="dropdown-item py-2" href="#" onclick="switchView('tabunganku')"><i class="fa fa-archive me-2 text-success"></i> Tabunganku</a></li>
+            <li><a class="dropdown-item py-2" href="#" onclick="switchView('ganti-password')"><i class="fa fa-key me-2 text-warning"></i> Ganti Password</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item py-2 text-danger fw-semibold" href="#" onclick="showLogoutModal()"><i class="fa fa-sign-out me-2"></i> LOGOUT</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="main-sidebar">
+      <div class="user-panel">
+        <div class="img-circle">
+          <i class="fa fa-user"></i>
+        </div>
+        <div class="info">
+          <p>Keuangan Pribadi</p>
+          <small><i class="fa fa-circle text-success me-1"></i> Aktif / Pengguna</small>
+        </div>
+      </div>
+
+      <ul class="sidebar-menu">
+        <li class="header">MENU UTAMA</li>
+        <li class="active" id="nav-dashboard">
+          <a href="#" onclick="switchView('dashboard')"><i class="fa fa-dashboard"></i> <span>DASHBOARD</span></a>
+        </li>
+        <li id="nav-kategori">
+          <a href="#" onclick="switchView('kategori')"><i class="fa fa-folder-open"></i> <span>DATA KATEGORI</span></a>
+        </li>
+        <li id="nav-transaksi">
+          <a href="#" onclick="switchView('transaksi')"><i class="fa fa-exchange"></i> <span>DATA TRANSAKSI</span></a>
+        </li>
+        <li id="nav-hutang">
+          <a href="#" onclick="switchView('hutang')"><i class="fa fa-handshake-o"></i> <span>HUTANG PIUTANG</span></a>
+        </li>
+        <li id="nav-rekening">
+          <a href="#" onclick="switchView('rekening')"><i class="fa fa-bank"></i> <span>REKENING BANK</span></a>
+        </li>
+        <li id="nav-laporan">
+          <a href="#" onclick="switchView('laporan')"><i class="fa fa-file-text-o"></i> <span>LAPORAN</span></a>
+        </li>
+        <li id="nav-tabunganku">
+          <a href="#" onclick="switchView('tabunganku')"><i class="fa fa-archive text-warning"></i> <span>TABUNGANKU</span></a>
+        </li>
+        <li class="header">PENGATURAN</li>
+        <li id="nav-ganti-password">
+          <a href="#" onclick="switchView('ganti-password')"><i class="fa fa-lock"></i> <span>GANTI PASSWORD</span></a>
+        </li>
+        <li>
+          <a href="#" onclick="showLogoutModal()"><i class="fa fa-power-off text-danger"></i> <span>LOGOUT</span></a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- CONTENT WRAPPER -->
+    <main class="content-wrapper">
+
+      <!-- View: Dashboard -->
+      <section id="view-dashboard" class="content-view">
+        <div class="content-header mb-4">
+          <h1 class="m-0">Dashboard <small class="text-muted fs-6 fw-normal">Keuangan Pribadi</small></h1>
+        </div>
+
+        <!-- CARDS PEMASUKAN & PENGELUARAN (8 CARDS) -->
+        <div class="row">
+          <!-- Pemasukan Cards -->
+          <div class="col-lg-3 col-md-6 col-12">
+            <div class="small-box bg-green-box">
+              <div class="inner">
+                <h3 id="dash-pem-hari">Rp 0,-</h3>
+                <p>Pemasukan Hari Ini</p>
+              </div>
+              <div class="icon"><i class="fa fa-arrow-down"></i></div>
+              <a href="#" onclick="switchView('transaksi')" class="small-box-footer">Detail Transaksi <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 col-12">
+            <div class="small-box bg-teal-box">
+              <div class="inner">
+                <h3 id="dash-pem-bulan">Rp 0,-</h3>
+                <p>Pemasukan Bulan Ini</p>
+              </div>
+              <div class="icon"><i class="fa fa-calendar-check-o"></i></div>
+              <a href="#" onclick="switchView('transaksi')" class="small-box-footer">Detail Transaksi <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 col-12">
+            <div class="small-box bg-gold-box">
+              <div class="inner">
+                <h3 id="dash-pem-tahun">Rp 0,-</h3>
+                <p>Pemasukan Tahun Ini</p>
+              </div>
+              <div class="icon"><i class="fa fa-line-chart"></i></div>
+              <a href="#" onclick="switchView('transaksi')" class="small-box-footer">Detail Transaksi <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 col-12">
+            <div class="small-box bg-dark-box">
+              <div class="inner">
+                <h3 id="dash-pem-total">Rp 0,-</h3>
+                <p>Seluruh Pemasukan</p>
+              </div>
+              <div class="icon"><i class="fa fa-money"></i></div>
+              <a href="#" onclick="switchView('transaksi')" class="small-box-footer">Detail Transaksi <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+          </div>
+
+          <!-- Pengeluaran Cards -->
+          <div class="col-lg-3 col-md-6 col-12">
+            <div class="small-box bg-red-box">
+              <div class="inner">
+                <h3 id="dash-peng-hari">Rp 0,-</h3>
+                <p>Pengeluaran Hari Ini</p>
+              </div>
+              <div class="icon"><i class="fa fa-arrow-up"></i></div>
+              <a href="#" onclick="switchView('transaksi')" class="small-box-footer">Detail Transaksi <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 col-12">
+            <div class="small-box bg-red-box">
+              <div class="inner">
+                <h3 id="dash-peng-bulan">Rp 0,-</h3>
+                <p>Pengeluaran Bulan Ini</p>
+              </div>
+              <div class="icon"><i class="fa fa-calendar-minus-o"></i></div>
+              <a href="#" onclick="switchView('transaksi')" class="small-box-footer">Detail Transaksi <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 col-12">
+            <div class="small-box bg-red-box">
+              <div class="inner">
+                <h3 id="dash-peng-tahun">Rp 0,-</h3>
+                <p>Pengeluaran Tahun Ini</p>
+              </div>
+              <div class="icon"><i class="fa fa-area-chart"></i></div>
+              <a href="#" onclick="switchView('transaksi')" class="small-box-footer">Detail Transaksi <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 col-12">
+            <div class="small-box bg-dark-box">
+              <div class="inner">
+                <h3 id="dash-peng-total">Rp 0,-</h3>
+                <p>Seluruh Pengeluaran</p>
+              </div>
+              <div class="icon"><i class="fa fa-credit-card"></i></div>
+              <a href="#" onclick="switchView('transaksi')" class="small-box-footer">Detail Transaksi <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRAFIK & WIDGET -->
+        <div class="row">
+          <div class="col-lg-8 col-12">
+            <div class="box">
+              <div class="box-header">
+                <h3 class="box-title"><i class="fa fa-bar-chart text-success me-2"></i> Grafik Arus Kas Pemasukan & Pengeluaran Per Bulan</h3>
+              </div>
+              <div class="box-body">
+                <canvas id="chartKeuangan" style="height:300px; width:100%;"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-12">
+            <div class="box glass-card">
+              <div class="box-header bg-transparent border-0 pb-0">
+                <h3 class="box-title text-success"><i class="fa fa-calendar me-2"></i> Tanggal Hari Ini</h3>
+              </div>
+              <div class="box-body text-center">
+                <div id="calendar-widget" class="p-3 fw-bold">
+                  <!-- Live Date Display -->
+                </div>
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-header">
+                <h3 class="box-title"><i class="fa fa-info-circle text-warning me-2"></i> Catatan Cepat</h3>
+              </div>
+              <div class="box-body">
+                <p class="text-muted small m-0 lh-base">Aplikasi Keuangan Pribadi siap digunakan. Semua nominal transaksi awal dimulai dari Rp 0,-. Anda dapat menambah data rekening, kategori, serta mencatat transaksi finansial Anda kapan saja.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Data Kategori -->
+      <section id="view-kategori" class="content-view d-none">
+        <div class="content-header mb-4">
+          <h1 class="m-0">Kategori <small class="text-muted fs-6 fw-normal">Manajemen Kategori Transaksi</small></h1>
+        </div>
+
+        <div class="box">
+          <div class="box-header d-flex justify-content-between align-items-center">
+            <h3 class="box-title">Daftar Kategori</h3>
+            <button class="btn btn-primary btn-sm" onclick="openKategoriModal()"><i class="fa fa-plus me-1"></i> Tambah Kategori</button>
+          </div>
+          <div class="box-body">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 60px;">NO</th>
+                    <th>NAMA KATEGORI</th>
+                    <th style="width: 140px;" class="text-center">OPSI</th>
+                  </tr>
+                </thead>
+                <tbody id="kategori-table-body">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Data Transaksi -->
+      <section id="view-transaksi" class="content-view d-none">
+        <div class="content-header mb-4">
+          <h1 class="m-0">Transaksi <small class="text-muted fs-6 fw-normal">Catatan Finansial</small></h1>
+        </div>
+
+        <div class="box">
+          <div class="box-header d-flex justify-content-between align-items-center">
+            <h3 class="box-title">Data Transaksi Pemasukan & Pengeluaran</h3>
+            <button class="btn btn-primary btn-sm" onclick="openTransaksiModal()"><i class="fa fa-plus me-1"></i> Tambah Transaksi</button>
+          </div>
+          <div class="box-body">
+            <div class="row mb-3">
+              <div class="col-md-4 ms-auto">
+                <input type="text" id="search-transaksi" class="form-field" placeholder="Cari transaksi..." onkeyup="renderTransaksiTable()">
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">NO</th>
+                    <th>TANGGAL</th>
+                    <th>KATEGORI</th>
+                    <th>KETERANGAN</th>
+                    <th class="text-center">PEMASUKAN</th>
+                    <th class="text-center">PENGELUARAN</th>
+                    <th style="width: 120px;" class="text-center">OPSI</th>
+                  </tr>
+                </thead>
+                <tbody id="transaksi-table-body">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Hutang Piutang -->
+      <section id="view-hutang" class="content-view d-none">
+        <div class="content-header mb-4">
+          <h1 class="m-0">Hutang Piutang <small class="text-muted fs-6 fw-normal">Catatan Pinjaman & Piutang</small></h1>
+        </div>
+
+        <div class="box">
+          <div class="box-header d-flex justify-content-between align-items-center">
+            <h3 class="box-title">Daftar Catatan Hutang / Piutang</h3>
+            <button class="btn btn-primary btn-sm" onclick="openHutangModal()"><i class="fa fa-plus me-1"></i> Tambah Catatan</button>
+          </div>
+          <div class="box-body">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">NO</th>
+                    <th>TANGGAL</th>
+                    <th>NAMA PIHAK</th>
+                    <th>NOMINAL</th>
+                    <th>TIPE</th>
+                    <th>KETERANGAN</th>
+                    <th style="width: 120px;" class="text-center">OPSI</th>
+                  </tr>
+                </thead>
+                <tbody id="hutang-table-body">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Rekening Bank -->
+      <section id="view-rekening" class="content-view d-none">
+        <div class="content-header mb-4">
+          <h1 class="m-0">Rekening Bank <small class="text-muted fs-6 fw-normal">Manajemen Akun / Bank</small></h1>
+        </div>
+
+        <div class="box">
+          <div class="box-header d-flex justify-content-between align-items-center">
+            <h3 class="box-title">Daftar Rekening Bank & Akun</h3>
+            <button class="btn btn-primary btn-sm" onclick="openRekeningModal()"><i class="fa fa-plus me-1"></i> Tambah Rekening Bank</button>
+          </div>
+          <div class="box-body">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">NO</th>
+                    <th>NAMA BANK / AKUN</th>
+                    <th>NOMOR REKENING</th>
+                    <th>PEMILIK REKENING</th>
+                    <th>SALDO AWAL</th>
+                    <th>SALDO SAAT INI</th>
+                    <th style="width: 130px;" class="text-center">OPSI</th>
+                  </tr>
+                </thead>
+                <tbody id="bank-table-body">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Laporan -->
+      <section id="view-laporan" class="content-view d-none">
+        <div class="content-header mb-4">
+          <h1 class="m-0">Laporan <small class="text-muted fs-6 fw-normal">Rekap Pemasukan & Pengeluaran</small></h1>
+        </div>
+
+        <!-- FILTER BOX -->
+        <div class="box">
+          <div class="box-header">
+            <h3 class="box-title"><i class="fa fa-filter text-success me-2"></i> Filter Periode Laporan</h3>
+          </div>
+          <div class="box-body">
+            <form id="form-filter-laporan" onsubmit="filterLaporan(event)">
+              <div class="row align-items-end g-3">
+                <div class="col-md-3">
+                  <label class="form-label fw-semibold">Mulai Tanggal</label>
+                  <input type="date" class="form-field" id="filter-start-date" required>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label fw-semibold">Sampai Tanggal</label>
+                  <input type="date" class="form-field" id="filter-end-date" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Kategori</label>
+                  <select class="form-field" id="filter-kategori">
+                    <option value="semua">- Semua Kategori -</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <button type="submit" class="btn btn-primary w-100"><i class="fa fa-search me-1"></i> Tampilkan</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- REPORT RESULT BOX -->
+        <div class="box">
+          <div class="box-header d-flex justify-content-between align-items-center">
+            <h3 class="box-title">Hasil Laporan Keuangan</h3>
+            <div class="d-flex gap-2">
+              <button class="btn btn-success btn-sm" onclick="exportPDF()"><i class="fa fa-file-pdf-o me-1"></i> Cetak PDF</button>
+              <button class="btn btn-outline-secondary btn-sm" onclick="printReport()"><i class="fa fa-print me-1"></i> Print</button>
+            </div>
+          </div>
+          <div class="box-body">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <table class="table table-sm table-borderless">
+                  <tr>
+                    <th style="width: 140px;">DARI TANGGAL</th>
+                    <td>: <span id="rep-start-date" class="fw-bold">-</span></td>
+                  </tr>
+                  <tr>
+                    <th>SAMPAI TANGGAL</th>
+                    <td>: <span id="rep-end-date" class="fw-bold">-</span></td>
+                  </tr>
+                  <tr>
+                    <th>KATEGORI</th>
+                    <td>: <span id="rep-kategori" class="fw-bold">SEMUA KATEGORI</span></td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-bordered align-middle" id="report-table">
+                <thead>
+                  <tr class="table-light">
+                    <th style="width: 50px;">NO</th>
+                    <th>TANGGAL</th>
+                    <th>KATEGORI</th>
+                    <th>KETERANGAN</th>
+                    <th class="text-center">PEMASUKAN</th>
+                    <th class="text-center">PENGELUARAN</th>
+                  </tr>
+                </thead>
+                <tbody id="laporan-table-body">
+                  <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Silakan pilih filter tanggal di atas lalu klik <strong>Tampilkan</strong>.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Tabunganku -->
+      <section id="view-tabunganku" class="content-view d-none">
+        <div class="content-header mb-4 d-flex justify-content-between align-items-center">
+          <h1 class="m-0">Tabunganku <small class="text-muted fs-6 fw-normal">Manajemen Setoran & Alokasi Menabung</small></h1>
+          <button class="btn btn-primary btn-sm" onclick="openTabunganModal()"><i class="fa fa-plus me-1"></i> Setor / Menabung Baru</button>
+        </div>
+
+        <!-- CARDS RINGKASAN TABUNGAN -->
+        <div class="row">
+          <div class="col-lg-4 col-md-6 col-12">
+            <div class="small-box bg-gold-box">
+              <div class="inner">
+                <h3 id="tabungan-total">Rp 0,-</h3>
+                <p>Total Saldo Tabungan</p>
+              </div>
+              <div class="icon"><i class="fa fa-archive"></i></div>
+            </div>
+          </div>
+          <div class="col-lg-4 col-md-6 col-12">
+            <div class="small-box bg-teal-box">
+              <div class="inner">
+                <h3 id="tabungan-bulan-ini">Rp 0,-</h3>
+                <p>Pemasukan Menabung Bulan Ini</p>
+              </div>
+              <div class="icon"><i class="fa fa-calendar-plus-o"></i></div>
+            </div>
+          </div>
+          <div class="col-lg-4 col-md-12 col-12">
+            <div class="small-box bg-green-box">
+              <div class="inner">
+                <h3 id="tabungan-target-display">Target Rp 10.000.000,-</h3>
+                <p id="tabungan-progress-text">Progres Target: 0%</p>
+              </div>
+              <div class="icon"><i class="fa fa-bullseye"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SET TARGET & PROGRESS BAR -->
+        <div class="box p-3 mb-4">
+          <div class="row align-items-center">
+            <div class="col-md-8 mb-2 mb-md-0">
+              <div class="d-flex justify-content-between mb-1 fw-semibold text-secondary">
+                <span>Progres Pencapaian Tabungan</span>
+                <span id="tabungan-percentage-badge">0%</span>
+              </div>
+              <div class="progress" style="height: 18px; border-radius: 10px;">
+                <div id="tabungan-progress-bar" class="progress-bar bg-warning progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;"></div>
+              </div>
+            </div>
+            <div class="col-md-4 text-end">
+              <button class="btn btn-outline-success btn-sm w-100" onclick="promptSetTarget()"><i class="fa fa-pencil me-1"></i> Ubah Target Menabung</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABEL RIWAYAT MENABUNG -->
+        <div class="box">
+          <div class="box-header d-flex justify-content-between align-items-center">
+            <h3 class="box-title"><i class="fa fa-history text-warning me-2"></i> Riwayat Setoran / Pemasukan Menabung</h3>
+          </div>
+          <div class="box-body">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">NO</th>
+                    <th>TANGGAL</th>
+                    <th>TUJUAN TABUNGAN</th>
+                    <th>SUMBER DANA / REKENING</th>
+                    <th>KETERANGAN</th>
+                    <th class="text-center">NOMINAL SETORAN</th>
+                    <th style="width: 120px;" class="text-center">OPSI</th>
+                  </tr>
+                </thead>
+                <tbody id="tabungan-table-body">
+                  <!-- Dynamic Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Ganti Password -->
+      <section id="view-ganti-password" class="content-view d-none">
+        <div class="content-header mb-4">
+          <h1 class="m-0">Ganti Password <small class="text-muted fs-6 fw-normal">Keamanan Akun Keuangan</small></h1>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="box">
+              <div class="box-header">
+                <h3 class="box-title"><i class="fa fa-key text-warning me-2"></i> Ubah Password</h3>
+              </div>
+              <div class="box-body">
+                <form id="form-password" onsubmit="changePassword(event)">
+                  <div class="mb-3">
+                    <label class="form-label required fw-semibold">Password Baru</label>
+                    <input type="password" id="new-password" class="form-field" placeholder="Ketik password baru..." required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label required fw-semibold">Konfirmasi Password Baru</label>
+                    <input type="password" id="confirm-password" class="form-field" placeholder="Ketik ulang password baru..." required>
+                  </div>
+                  <div class="mb-3">
+                    <small class="text-muted d-block mb-1">Hash Enkripsi MD5 saat ini:</small>
+                    <input type="text" id="hash-preview" class="form-field bg-light text-muted" readonly placeholder="Hash MD5 akan muncul di sini">
+                  </div>
+                  <button type="submit" class="btn btn-primary"><i class="fa fa-save me-1"></i> Simpan Password</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- MODAL TABUNGANKU -->
+  <div class="modal fade" id="tabunganModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" id="tabunganModalTitle">Setor / Pemasukan Menabung</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="form-tabungan" onsubmit="saveTabungan(event)">
+          <div class="modal-body">
+            <input type="hidden" id="tab-id">
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Tanggal Setor</label>
+              <input type="date" class="form-field" id="tab-tanggal" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Nama Tabungan / Tujuan</label>
+              <input type="text" class="form-field" id="tab-tujuan" placeholder="Contoh: Tabungan Umroh, Dana Darurat" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Sumber Dana / Rekening</label>
+              <select class="form-field" id="tab-rekening" required></select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Nominal Setoran (Rp)</label>
+              <input type="number" class="form-field" id="tab-nominal" placeholder="0" min="1" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Keterangan / Catatan</label>
+              <textarea class="form-field" id="tab-keterangan" rows="2" placeholder="Catatan tambahan..."></textarea>
+            </div>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="tab-auto-deduct" checked>
+              <label class="form-check-label text-muted small" for="tab-auto-deduct">
+                Otomatis potong saldo rekening sumber dana & catat sebagai transaksi pengeluaran alokasi tabungan
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fa fa-save me-1"></i> Simpan Setoran</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL KATEGORI -->
+  <div class="modal fade" id="kategoriModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" id="kategoriModalTitle">Tambah Kategori</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="form-kategori" onsubmit="saveKategori(event)">
+          <div class="modal-body">
+            <input type="hidden" id="kat-id">
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Nama Kategori</label>
+              <input type="text" class="form-field" id="kat-nama" placeholder="Contoh: Gaji, Belanja, Investasi..." required>
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fa fa-save me-1"></i> Simpan Kategori</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TRANSAKSI -->
+  <div class="modal fade" id="transaksiModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" id="transaksiModalTitle">Tambah Transaksi</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="form-transaksi" onsubmit="saveTransaksi(event)">
+          <div class="modal-body">
+            <input type="hidden" id="trx-id">
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Tanggal</label>
+              <input type="date" class="form-field" id="trx-tanggal" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Jenis Transaksi</label>
+              <select class="form-field" id="trx-jenis" required>
+                <option value="pemasukan">Pemasukan</option>
+                <option value="pengeluaran">Pengeluaran</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Kategori</label>
+              <select class="form-field" id="trx-kategori" required></select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Nominal (Rp)</label>
+              <input type="number" class="form-field" id="trx-nominal" placeholder="Contoh: 100000" min="1" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Rekening Bank / Akun</label>
+              <select class="form-field" id="trx-rekening" required></select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Keterangan</label>
+              <textarea class="form-field" id="trx-keterangan" rows="2" placeholder="Catatan opsional..."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fa fa-save me-1"></i> Simpan Transaksi</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL REKENING BANK -->
+  <div class="modal fade" id="rekeningModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" id="rekeningModalTitle">Tambah Rekening Bank</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="form-rekening" onsubmit="saveRekening(event)">
+          <div class="modal-body">
+            <input type="hidden" id="rek-id">
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Nama Bank / Akun</label>
+              <input type="text" class="form-field" id="rek-bank" placeholder="Contoh: BCA / Mandiri / Kas Tunai" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Nomor Rekening / Akun</label>
+              <input type="text" class="form-field" id="rek-nomor" placeholder="Contoh: 1234567890" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Nama Pemilik / Atas Nama</label>
+              <input type="text" class="form-field" id="rek-pemilik" placeholder="Contoh: Keuangan Pribadi" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Saldo Awal (Rp)</label>
+              <input type="number" class="form-field" id="rek-saldo" min="0" value="0" required>
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fa fa-save me-1"></i> Simpan Rekening</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL HUTANG -->
+  <div class="modal fade" id="hutangModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" id="hutangModalTitle">Tambah Catatan Hutang / Piutang</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="form-hutang" onsubmit="saveHutang(event)">
+          <div class="modal-body">
+            <input type="hidden" id="hut-id">
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Tanggal</label>
+              <input type="date" class="form-field" id="hut-tanggal" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Nama Pihak Terkait</label>
+              <input type="text" class="form-field" id="hut-nama" placeholder="Nama orang / instansi" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Tipe Catatan</label>
+              <select class="form-field" id="hut-tipe" required>
+                <option value="hutang">Hutang (Saya Meminjam)</option>
+                <option value="piutang">Piutang (Orang Lain Meminjam)</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label required fw-semibold">Nominal (Rp)</label>
+              <input type="number" class="form-field" id="hut-nominal" placeholder="0" min="1" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Keterangan</label>
+              <textarea class="form-field" id="hut-keterangan" rows="2" placeholder="Catatan tambahan..."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fa fa-save me-1"></i> Simpan Data</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRMATION MODAL -->
+  <div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header bg-danger text-white border-0">
+          <h5 class="modal-title fw-bold" id="confirmModalTitle">Konfirmasi</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="confirmModalBody">
+          Apakah Anda yakin ingin menghapus data ini?
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-danger btn-sm" id="confirmModalBtn">Ya, Lanjutkan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- APPLICATION LOGIC JS -->
+  <script>
+    // Initial State Application (Start from Rp 0)
+    let categories = JSON.parse(localStorage.getItem('app_categories')) || [
+      { id: 1, name: 'Keluarga & Rumah Tangga' },
+      { id: 2, name: 'Gaji & Pendapatan' },
+      { id: 3, name: 'Kebutuhan Sehari-hari' },
+      { id: 4, name: 'Investasi & Tabungan' },
+      { id: 5, name: 'Hiburan & Hobi' },
+      { id: 6, name: 'Lainnya' }
+    ];
+
+    let bankAccounts = JSON.parse(localStorage.getItem('app_bankAccounts')) || [
+      { id: 1, bank: 'Bank BCA', accountNum: '1234567890', owner: 'Keuangan Pribadi', balance: 0 },
+      { id: 2, bank: 'Bank Mandiri', accountNum: '0987654321', owner: 'Keuangan Pribadi', balance: 0 }
+    ];
+
+    let transactions = JSON.parse(localStorage.getItem('app_transactions')) || [];
+    let debts = JSON.parse(localStorage.getItem('app_debts')) || [];
+    let savings = JSON.parse(localStorage.getItem('app_savings')) || [];
+    let savingsTarget = parseFloat(localStorage.getItem('app_savings_target')) || 10000000;
+    
+    // Auth & Password Hash (Default: admin / admin123)
+    let appUser = localStorage.getItem('app_username') || 'admin';
+    let userPassHash = localStorage.getItem('app_user_hash') || CryptoJS.MD5('admin123').toString();
+
+    // State Save Helper
+    function saveState() {
+      localStorage.setItem('app_categories', JSON.stringify(categories));
+      localStorage.setItem('app_bankAccounts', JSON.stringify(bankAccounts));
+      localStorage.setItem('app_transactions', JSON.stringify(transactions));
+      localStorage.setItem('app_debts', JSON.stringify(debts));
+      localStorage.setItem('app_savings', JSON.stringify(savings));
+      localStorage.setItem('app_savings_target', savingsTarget.toString());
+      localStorage.setItem('app_username', appUser);
+      localStorage.setItem('app_user_hash', userPassHash);
+    }
+
+    // AUTHENTICATION LOGIC
+    function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('login-username').value.trim();
+      const p = document.getElementById('login-password').value;
+      const hashedInput = CryptoJS.MD5(p).toString();
+
+      if (u === appUser && hashedInput === userPassHash) {
+        localStorage.setItem('app_is_logged_in', 'true');
+        document.getElementById('login-screen').classList.add('d-none');
+        document.getElementById('app-container').classList.remove('d-none');
+        initApp();
+        showToast('Selamat datang kembali di KeuanganApp!');
+      } else {
+        showToast('Username atau Password salah!', 'error');
+      }
+    }
+
+    function showLogoutModal() {
+      showConfirmModal(
+        'Konfirmasi Logout',
+        'Apakah Anda yakin ingin keluar dan mengunci aplikasi kembali?',
+        function() {
+          localStorage.removeItem('app_is_logged_in');
+          document.getElementById('app-container').classList.add('d-none');
+          document.getElementById('login-screen').classList.remove('d-none');
+          showToast('Anda telah keluar dari aplikasi.');
+        }
+      );
+    }
+
+    // Helper Format Rupiah
+    function formatRupiah(number) {
+      const val = Number(number) || 0;
+      return 'Rp. ' + val.toLocaleString('id-ID') + ',-';
+    }
+
+    // Toast Notification System
+    function showToast(message, type = 'success') {
+      const toastContainer = document.getElementById('toast-container');
+      const bgClass = type === 'success' ? 'bg-success' : 'bg-danger';
+      
+      const toastEl = document.createElement('div');
+      toastEl.className = `toast align-items-center text-white ${bgClass} border-0 show mb-2 shadow`;
+      toastEl.setAttribute('role', 'alert');
+      toastEl.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body fw-semibold">${message}</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      `;
+      toastContainer.appendChild(toastEl);
+      setTimeout(() => {
+        toastEl.remove();
+      }, 3500);
+    }
+
+    // Custom Modal Confirmation
+    let pendingConfirmAction = null;
+    function showConfirmModal(title, bodyText, onConfirm) {
+      document.getElementById('confirmModalTitle').innerText = title;
+      document.getElementById('confirmModalBody').innerHTML = bodyText;
+      pendingConfirmAction = onConfirm;
+      
+      const confirmBtn = document.getElementById('confirmModalBtn');
+      confirmBtn.onclick = function() {
+        if (pendingConfirmAction) pendingConfirmAction();
+        const modalEl = document.getElementById('confirmModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+      };
+
+      const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+      modal.show();
+    }
+
+    // Navigation Switch View
+    function switchView(viewName) {
+      document.querySelectorAll('.content-view').forEach(v => v.classList.add('d-none'));
+      document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+
+      const targetView = document.getElementById(`view-${viewName}`);
+      const targetNav = document.getElementById(`nav-${viewName}`);
+
+      if (targetView) targetView.classList.remove('d-none');
+      if (targetNav) targetNav.classList.add('active');
+
+      if (viewName === 'dashboard') updateDashboard();
+      if (viewName === 'kategori') renderKategoriTable();
+      if (viewName === 'transaksi') renderTransaksiTable();
+      if (viewName === 'rekening') renderBankTable();
+      if (viewName === 'hutang') renderHutangTable();
+      if (viewName === 'tabunganku') renderTabungan();
+      if (viewName === 'ganti-password') updateHashPreview();
+    }
+
+    // Sidebar Toggle
+    function toggleSidebar() {
+      document.body.classList.toggle('sidebar-collapse');
+      document.body.classList.toggle('sidebar-open');
+    }
+
+    // Calendar Live Widget
+    function initCalendarWidget() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateStr = now.toLocaleDateString('id-ID', options);
+      document.getElementById('calendar-widget').innerHTML = `
+        <div class="display-5 fw-bold text-success" style="letter-spacing:-1px;">${now.getDate()}</div>
+        <div class="text-uppercase fw-bold text-secondary small">${dateStr}</div>
+      `;
+    }
+
+    // Chart.js Instance Variable
+    let chartInstance = null;
+
+    // --- DASHBOARD FUNCTIONS ---
+    function updateDashboard() {
+      const today = new Date().toISOString().split('T')[0];
+      const currentMonth = today.substring(0, 7);
+      const currentYear = today.substring(0, 4);
+
+      let pemHari = 0, pemBulan = 0, pemTahun = 0, pemTotal = 0;
+      let pengHari = 0, pengBulan = 0, pengTahun = 0, pengTotal = 0;
+
+      const monthlyPemasukan = new Array(12).fill(0);
+      const monthlyPengeluaran = new Array(12).fill(0);
+
+      transactions.forEach(t => {
+        const nominal = Number(t.nominal || 0);
+        const tDate = t.tanggal;
+        const tMonth = tDate.substring(0, 7);
+        const tYear = tDate.substring(0, 4);
+        const monthIdx = parseInt(tDate.substring(5, 7), 10) - 1;
+
+        if (t.jenis === 'pemasukan') {
+          pemTotal += nominal;
+          if (tDate === today) pemHari += nominal;
+          if (tMonth === currentMonth) pemBulan += nominal;
+          if (tYear === currentYear) {
+            pemTahun += nominal;
+            if (monthIdx >= 0 && monthIdx < 12) monthlyPemasukan[monthIdx] += nominal;
+          }
+        } else if (t.jenis === 'pengeluaran') {
+          pengTotal += nominal;
+          if (tDate === today) pengHari += nominal;
+          if (tMonth === currentMonth) pengBulan += nominal;
+          if (tYear === currentYear) {
+            pengTahun += nominal;
+            if (monthIdx >= 0 && monthIdx < 12) monthlyPengeluaran[monthIdx] += nominal;
+          }
+        }
+      });
+
+      document.getElementById('dash-pem-hari').innerText = formatRupiah(pemHari);
+      document.getElementById('dash-pem-bulan').innerText = formatRupiah(pemBulan);
+      document.getElementById('dash-pem-tahun').innerText = formatRupiah(pemTahun);
+      document.getElementById('dash-pem-total').innerText = formatRupiah(pemTotal);
+
+      document.getElementById('dash-peng-hari').innerText = formatRupiah(pengHari);
+      document.getElementById('dash-peng-bulan').innerText = formatRupiah(pengBulan);
+      document.getElementById('dash-peng-tahun').innerText = formatRupiah(pengTahun);
+      document.getElementById('dash-peng-total').innerText = formatRupiah(pengTotal);
+
+      const ctx = document.getElementById('chartKeuangan').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+          datasets: [
+            {
+              label: 'Pemasukan',
+              data: monthlyPemasukan,
+              backgroundColor: '#10b981',
+              borderRadius: 6
+            },
+            {
+              label: 'Pengeluaran',
+              data: monthlyPengeluaran,
+              backgroundColor: '#ef4444',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return 'Rp ' + value.toLocaleString('id-ID');
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // --- TABUNGANKU MANAGEMENT ---
+    function renderTabungan() {
+      const today = new Date().toISOString().split('T')[0];
+      const currentMonth = today.substring(0, 7);
+
+      let totalSaldoTabungan = 0;
+      let totalBulanIni = 0;
+
+      savings.forEach(s => {
+        const nom = Number(s.nominal || 0);
+        totalSaldoTabungan += nom;
+        if (s.tanggal && s.tanggal.substring(0, 7) === currentMonth) {
+          totalBulanIni += nom;
+        }
+      });
+
+      document.getElementById('tabungan-total').innerText = formatRupiah(totalSaldoTabungan);
+      document.getElementById('tabungan-bulan-ini').innerText = formatRupiah(totalBulanIni);
+      document.getElementById('tabungan-target-display').innerText = 'Target ' + formatRupiah(savingsTarget);
+
+      const percentage = savingsTarget > 0 ? Math.min(Math.round((totalSaldoTabungan / savingsTarget) * 100), 100) : 0;
+      document.getElementById('tabungan-progress-text').innerText = `Progres Target: ${percentage}%`;
+      document.getElementById('tabungan-percentage-badge').innerText = `${percentage}%`;
+
+      const progressBar = document.getElementById('tabungan-progress-bar');
+      progressBar.style.width = `${percentage}%`;
+      progressBar.setAttribute('aria-valuenow', percentage);
+
+      // Render Table
+      const tbody = document.getElementById('tabungan-table-body');
+      tbody.innerHTML = '';
+
+      if (savings.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Belum ada riwayat setoran tabungan. Klik "Setor / Menabung Baru" untuk mulai menabung!</td></tr>`;
+        return;
+      }
+
+      savings.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+      savings.forEach((s, index) => {
+        const acc = bankAccounts.find(b => b.id == s.bankAccountId);
+        const bankText = acc ? `${acc.bank} (${acc.accountNum})` : 'Kas Umum';
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${s.tanggal}</td>
+            <td class="fw-semibold text-success"><i class="fa fa-tag me-1"></i>${s.tujuan}</td>
+            <td><span class="badge bg-light text-dark border">${bankText}</span></td>
+            <td>${s.keterangan || '-'}</td>
+            <td class="text-end fw-bold text-success">${formatRupiah(s.nominal)}</td>
+            <td class="text-center">
+              <button class="btn btn-action btn-warning" onclick="editTabungan(${s.id})" title="Edit"><i class="fa fa-pencil"></i></button>
+              <button class="btn btn-action btn-danger" onclick="deleteTabungan(${s.id})" title="Hapus"><i class="fa fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function openTabunganModal() {
+      document.getElementById('tabunganModalTitle').innerText = 'Setor / Pemasukan Menabung';
+      document.getElementById('tab-id').value = '';
+      document.getElementById('tab-tanggal').value = new Date().toISOString().split('T')[0];
+      document.getElementById('tab-tujuan').value = '';
+      document.getElementById('tab-nominal').value = '';
+      document.getElementById('tab-keterangan').value = '';
+      document.getElementById('tab-auto-deduct').checked = true;
+
+      populateDropdowns();
+      const modal = new bootstrap.Modal(document.getElementById('tabunganModal'));
+      modal.show();
+    }
+
+    function editTabungan(id) {
+      const s = savings.find(x => x.id === id);
+      if (!s) return;
+
+      populateDropdowns();
+
+      document.getElementById('tabunganModalTitle').innerText = 'Edit Setoran Menabung';
+      document.getElementById('tab-id').value = s.id;
+      document.getElementById('tab-tanggal').value = s.tanggal;
+      document.getElementById('tab-tujuan').value = s.tujuan;
+      document.getElementById('tab-rekening').value = s.bankAccountId;
+      document.getElementById('tab-nominal').value = s.nominal;
+      document.getElementById('tab-keterangan').value = s.keterangan || '';
+      document.getElementById('tab-auto-deduct').checked = false;
+
+      const modal = new bootstrap.Modal(document.getElementById('tabunganModal'));
+      modal.show();
+    }
+
+    function saveTabungan(e) {
+      e.preventDefault();
+      const id = document.getElementById('tab-id').value;
+      const tanggal = document.getElementById('tab-tanggal').value;
+      const tujuan = document.getElementById('tab-tujuan').value.trim();
+      const bankAccountId = Number(document.getElementById('tab-rekening').value);
+      const nominal = parseFloat(document.getElementById('tab-nominal').value) || 0;
+      const keterangan = document.getElementById('tab-keterangan').value.trim();
+      const autoDeduct = document.getElementById('tab-auto-deduct').checked;
+
+      if (!tanggal || !tujuan || !nominal || !bankAccountId) {
+        showToast('Lengkapi seluruh field wajib!', 'error');
+        return;
+      }
+
+      let catSave = categories.find(c => c.name.toLowerCase().includes('tabungan') || c.name.toLowerCase().includes('investasi'));
+      let catId = catSave ? catSave.id : (categories[0] ? categories[0].id : 1);
+      let catName = catSave ? catSave.name : 'Investasi & Tabungan';
+
+      if (id) {
+        const index = savings.findIndex(x => x.id == id);
+        if (index !== -1) {
+          savings[index] = { id: Number(id), tanggal, tujuan, bankAccountId, nominal, keterangan };
+          showToast('Data setoran tabungan berhasil diperbarui!');
+        }
+      } else {
+        const newSaveId = Date.now();
+        savings.push({ id: newSaveId, tanggal, tujuan, bankAccountId, nominal, keterangan });
+
+        if (autoDeduct) {
+          transactions.push({
+            id: newSaveId + 1,
+            tanggal,
+            jenis: 'pengeluaran',
+            kategoriId: catId,
+            kategoriName: catName,
+            nominal,
+            bankAccountId,
+            keterangan: `[Menabung] ${tujuan} - ${keterangan}`
+          });
+        }
+        showToast('Setoran menabung berhasil disimpan!');
+      }
+
+      saveState();
+      renderTabungan();
+      updateDashboard();
+      renderBankTable();
+
+      const modalEl = document.getElementById('tabunganModal');
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+    }
+
+    function deleteTabungan(id) {
+      showConfirmModal(
+        'Hapus Setoran Tabungan',
+        'Apakah Anda yakin ingin menghapus data setoran menabung ini?',
+        function() {
+          savings = savings.filter(s => s.id !== id);
+          saveState();
+          renderTabungan();
+          updateDashboard();
+          showToast('Setoran tabungan telah dihapus.');
+        }
+      );
+    }
+
+    function promptSetTarget() {
+      const val = prompt('Masukkan nominal target menabung baru (Rp):', savingsTarget);
+      if (val !== null) {
+        const parsed = parseFloat(val);
+        if (!isNaN(parsed) && parsed > 0) {
+          savingsTarget = parsed;
+          saveState();
+          renderTabungan();
+          showToast('Target menabung berhasil diperbarui!');
+        } else {
+          showToast('Nominal target tidak valid!', 'error');
+        }
+      }
+    }
+
+    // --- KATEGORI MANAGEMENT ---
+    function renderKategoriTable() {
+      const tbody = document.getElementById('kategori-table-body');
+      tbody.innerHTML = '';
+
+      if (categories.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-4">Belum ada data kategori.</td></tr>`;
+        return;
+      }
+
+      categories.forEach((cat, index) => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td class="fw-semibold">${cat.name}</td>
+            <td class="text-center">
+              <button class="btn btn-action btn-warning" onclick="editKategori(${cat.id})" title="Edit"><i class="fa fa-pencil"></i></button>
+              <button class="btn btn-action btn-danger" onclick="deleteKategori(${cat.id})" title="Hapus"><i class="fa fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function openKategoriModal() {
+      document.getElementById('kategoriModalTitle').innerText = 'Tambah Kategori';
+      document.getElementById('kat-id').value = '';
+      document.getElementById('kat-nama').value = '';
+      const modal = new bootstrap.Modal(document.getElementById('kategoriModal'));
+      modal.show();
+    }
+
+    function editKategori(id) {
+      const cat = categories.find(c => c.id === id);
+      if (!cat) return;
+
+      document.getElementById('kategoriModalTitle').innerText = 'Edit Kategori';
+      document.getElementById('kat-id').value = cat.id;
+      document.getElementById('kat-nama').value = cat.name;
+
+      const modal = new bootstrap.Modal(document.getElementById('kategoriModal'));
+      modal.show();
+    }
+
+    function saveKategori(e) {
+      e.preventDefault();
+      const id = document.getElementById('kat-id').value;
+      const nama = document.getElementById('kat-nama').value.trim();
+
+      if (!nama) return;
+
+      if (id) {
+        const index = categories.findIndex(c => c.id == id);
+        if (index !== -1) categories[index].name = nama;
+        showToast('Kategori berhasil diperbarui!');
+      } else {
+        categories.push({ id: Date.now(), name: nama });
+        showToast('Kategori baru berhasil ditambahkan!');
+      }
+
+      saveState();
+      renderKategoriTable();
+      populateDropdowns();
+
+      const modalEl = document.getElementById('kategoriModal');
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+    }
+
+    function deleteKategori(id) {
+      const cat = categories.find(c => c.id === id);
+      if (!cat) return;
+
+      showConfirmModal(
+        'Hapus Kategori',
+        `Apakah Anda yakin ingin menghapus kategori <strong>${cat.name}</strong>?`,
+        function() {
+          categories = categories.filter(c => c.id !== id);
+          saveState();
+          renderKategoriTable();
+          populateDropdowns();
+          showToast('Kategori berhasil dihapus.');
+        }
+      );
+    }
+
+    // --- REKENING BANK MANAGEMENT ---
+    function renderBankTable() {
+      const tbody = document.getElementById('bank-table-body');
+      tbody.innerHTML = '';
+
+      if (bankAccounts.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Belum ada data rekening bank. Klik "Tambah Rekening Bank" untuk menambahkan.</td></tr>`;
+        return;
+      }
+
+      bankAccounts.forEach((acc, index) => {
+        let computedBalance = Number(acc.balance || 0);
+        transactions.forEach(t => {
+          if (t.bankAccountId == acc.id) {
+            if (t.jenis === 'pemasukan') computedBalance += Number(t.nominal || 0);
+            if (t.jenis === 'pengeluaran') computedBalance -= Number(t.nominal || 0);
+          }
+        });
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td><strong>${acc.bank}</strong></td>
+            <td><code>${acc.accountNum}</code></td>
+            <td>${acc.owner}</td>
+            <td>${formatRupiah(acc.balance || 0)}</td>
+            <td><span class="badge bg-success px-3 py-2 rounded-pill fs-6">${formatRupiah(computedBalance)}</span></td>
+            <td class="text-center">
+              <button class="btn btn-action btn-warning" onclick="editRekening(${acc.id})" title="Edit Rekening">
+                <i class="fa fa-pencil"></i>
+              </button>
+              <button class="btn btn-action btn-danger" onclick="deleteRekening(${acc.id})" title="Hapus Rekening">
+                <i class="fa fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function openRekeningModal() {
+      document.getElementById('rekeningModalTitle').innerText = 'Tambah Rekening Bank Baru';
+      document.getElementById('rek-id').value = '';
+      document.getElementById('rek-bank').value = '';
+      document.getElementById('rek-nomor').value = '';
+      document.getElementById('rek-pemilik').value = 'Keuangan Pribadi';
+      document.getElementById('rek-saldo').value = '0';
+      
+      const modal = new bootstrap.Modal(document.getElementById('rekeningModal'));
+      modal.show();
+    }
+
+    function editRekening(id) {
+      const acc = bankAccounts.find(b => b.id === id);
+      if (!acc) return;
+
+      document.getElementById('rekeningModalTitle').innerText = 'Edit Rekening Bank';
+      document.getElementById('rek-id').value = acc.id;
+      document.getElementById('rek-bank').value = acc.bank;
+      document.getElementById('rek-nomor').value = acc.accountNum;
+      document.getElementById('rek-pemilik').value = acc.owner;
+      document.getElementById('rek-saldo').value = acc.balance || 0;
+
+      const modal = new bootstrap.Modal(document.getElementById('rekeningModal'));
+      modal.show();
+    }
+
+    function saveRekening(e) {
+      e.preventDefault();
+      const id = document.getElementById('rek-id').value;
+      const bank = document.getElementById('rek-bank').value.trim();
+      const accountNum = document.getElementById('rek-nomor').value.trim();
+      const owner = document.getElementById('rek-pemilik').value.trim();
+      const balance = parseFloat(document.getElementById('rek-saldo').value) || 0;
+
+      if (!bank || !accountNum || !owner) {
+        showToast('Mohon lengkapi semua data rekening!', 'error');
+        return;
+      }
+
+      if (id) {
+        const accIndex = bankAccounts.findIndex(b => b.id == id);
+        if (accIndex !== -1) {
+          bankAccounts[accIndex] = { ...bankAccounts[accIndex], bank, accountNum, owner, balance };
+          showToast('Rekening bank berhasil diperbarui!');
+        }
+      } else {
+        const newAcc = { id: Date.now(), bank, accountNum, owner, balance };
+        bankAccounts.push(newAcc);
+        showToast('Rekening bank baru berhasil ditambahkan!');
+      }
+
+      saveState();
+      renderBankTable();
+      populateDropdowns();
+
+      const modalEl = document.getElementById('rekeningModal');
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+    }
+
+    function deleteRekening(id) {
+      const acc = bankAccounts.find(b => b.id === id);
+      if (!acc) return;
+
+      showConfirmModal(
+        'Hapus Rekening Bank',
+        `Apakah Anda yakin ingin menghapus rekening <strong>${acc.bank} (${acc.accountNum})</strong>?`,
+        function() {
+          bankAccounts = bankAccounts.filter(b => b.id !== id);
+          saveState();
+          renderBankTable();
+          populateDropdowns();
+          showToast('Rekening bank berhasil dihapus.');
+        }
+      );
+    }
+
+    // --- TRANSAKSI MANAGEMENT ---
+    function renderTransaksiTable() {
+      const tbody = document.getElementById('transaksi-table-body');
+      const query = (document.getElementById('search-transaksi').value || '').toLowerCase();
+      tbody.innerHTML = '';
+
+      const filtered = transactions.filter(t => {
+        return (
+          t.keterangan.toLowerCase().includes(query) ||
+          t.kategoriName.toLowerCase().includes(query) ||
+          t.tanggal.includes(query)
+        );
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Belum ada data transaksi. Klik "Tambah Transaksi" untuk memasukkan data.</td></tr>`;
+        return;
+      }
+
+      filtered.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+      filtered.forEach((t, index) => {
+        const isPem = t.jenis === 'pemasukan';
+        const pemText = isPem ? formatRupiah(t.nominal) : '-';
+        const pengText = !isPem ? formatRupiah(t.nominal) : '-';
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${t.tanggal}</td>
+            <td><span class="badge bg-light text-dark border">${t.kategoriName}</span></td>
+            <td>${t.keterangan || '-'}</td>
+            <td class="text-end fw-semibold text-success">${pemText}</td>
+            <td class="text-end fw-semibold text-danger">${pengText}</td>
+            <td class="text-center">
+              <button class="btn btn-action btn-warning" onclick="editTransaksi(${t.id})" title="Edit"><i class="fa fa-pencil"></i></button>
+              <button class="btn btn-action btn-danger" onclick="deleteTransaksi(${t.id})" title="Hapus"><i class="fa fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function openTransaksiModal() {
+      document.getElementById('transaksiModalTitle').innerText = 'Tambah Transaksi Baru';
+      document.getElementById('trx-id').value = '';
+      document.getElementById('trx-tanggal').value = new Date().toISOString().split('T')[0];
+      document.getElementById('trx-jenis').value = 'pemasukan';
+      document.getElementById('trx-nominal').value = '';
+      document.getElementById('trx-keterangan').value = '';
+
+      populateDropdowns();
+      const modal = new bootstrap.Modal(document.getElementById('transaksiModal'));
+      modal.show();
+    }
+
+    function editTransaksi(id) {
+      const t = transactions.find(x => x.id === id);
+      if (!t) return;
+
+      populateDropdowns();
+
+      document.getElementById('transaksiModalTitle').innerText = 'Edit Transaksi';
+      document.getElementById('trx-id').value = t.id;
+      document.getElementById('trx-tanggal').value = t.tanggal;
+      document.getElementById('trx-jenis').value = t.jenis;
+      document.getElementById('trx-kategori').value = t.kategoriId;
+      document.getElementById('trx-nominal').value = t.nominal;
+      document.getElementById('trx-rekening').value = t.bankAccountId;
+      document.getElementById('trx-keterangan').value = t.keterangan;
+
+      const modal = new bootstrap.Modal(document.getElementById('transaksiModal'));
+      modal.show();
+    }
+
+    function saveTransaksi(e) {
+      e.preventDefault();
+      const id = document.getElementById('trx-id').value;
+      const tanggal = document.getElementById('trx-tanggal').value;
+      const jenis = document.getElementById('trx-jenis').value;
+      const kategoriId = Number(document.getElementById('trx-kategori').value);
+      const nominal = parseFloat(document.getElementById('trx-nominal').value) || 0;
+      const bankAccountId = Number(document.getElementById('trx-rekening').value);
+      const keterangan = document.getElementById('trx-keterangan').value.trim();
+
+      const cat = categories.find(c => c.id === kategoriId);
+      const kategoriName = cat ? cat.name : 'Lainnya';
+
+      if (!tanggal || !nominal || !kategoriId || !bankAccountId) {
+        showToast('Mohon lengkapi semua field yang wajib!', 'error');
+        return;
+      }
+
+      if (id) {
+        const index = transactions.findIndex(x => x.id == id);
+        if (index !== -1) {
+          transactions[index] = {
+            id: Number(id),
+            tanggal,
+            jenis,
+            kategoriId,
+            kategoriName,
+            nominal,
+            bankAccountId,
+            keterangan
+          };
+          showToast('Transaksi berhasil diperbarui!');
+        }
+      } else {
+        transactions.push({
+          id: Date.now(),
+          tanggal,
+          jenis,
+          kategoriId,
+          kategoriName,
+          nominal,
+          bankAccountId,
+          keterangan
+        });
+        showToast('Transaksi berhasil disimpan!');
+      }
+
+      saveState();
+      renderTransaksiTable();
+      updateDashboard();
+      renderBankTable();
+
+      const modalEl = document.getElementById('transaksiModal');
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+    }
+
+    function deleteTransaksi(id) {
+      showConfirmModal(
+        'Hapus Transaksi',
+        'Apakah Anda yakin ingin menghapus data transaksi ini?',
+        function() {
+          transactions = transactions.filter(t => t.id !== id);
+          saveState();
+          renderTransaksiTable();
+          updateDashboard();
+          renderBankTable();
+          showToast('Transaksi telah dihapus.');
+        }
+      );
+    }
+
+    // --- HUTANG PIUTANG MANAGEMENT ---
+    function renderHutangTable() {
+      const tbody = document.getElementById('hutang-table-body');
+      tbody.innerHTML = '';
+
+      if (debts.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Belum ada catatan hutang/piutang.</td></tr>`;
+        return;
+      }
+
+      debts.forEach((d, index) => {
+        const badgeClass = d.tipe === 'hutang' ? 'bg-danger' : 'bg-success';
+        const tipeText = d.tipe === 'hutang' ? 'Hutang' : 'Piutang';
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${d.tanggal}</td>
+            <td class="fw-semibold">${d.nama}</td>
+            <td>${formatRupiah(d.nominal)}</td>
+            <td><span class="badge ${badgeClass} px-3 py-1 rounded-pill">${tipeText}</span></td>
+            <td>${d.keterangan || '-'}</td>
+            <td class="text-center">
+              <button class="btn btn-action btn-danger" onclick="deleteHutang(${d.id})" title="Hapus"><i class="fa fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function openHutangModal() {
+      document.getElementById('hutangModalTitle').innerText = 'Tambah Catatan Hutang / Piutang';
+      document.getElementById('hut-id').value = '';
+      document.getElementById('hut-tanggal').value = new Date().toISOString().split('T')[0];
+      document.getElementById('hut-nama').value = '';
+      document.getElementById('hut-tipe').value = 'hutang';
+      document.getElementById('hut-nominal').value = '';
+      document.getElementById('hut-keterangan').value = '';
+
+      const modal = new bootstrap.Modal(document.getElementById('hutangModal'));
+      modal.show();
+    }
+
+    function saveHutang(e) {
+      e.preventDefault();
+      const tanggal = document.getElementById('hut-tanggal').value;
+      const nama = document.getElementById('hut-nama').value.trim();
+      const tipe = document.getElementById('hut-tipe').value;
+      const nominal = parseFloat(document.getElementById('hut-nominal').value) || 0;
+      const keterangan = document.getElementById('hut-keterangan').value.trim();
+
+      if (!nama || !nominal || !tanggal) {
+        showToast('Lengkapi data hutang/piutang!', 'error');
+        return;
+      }
+
+      debts.push({
+        id: Date.now(),
+        tanggal,
+        nama,
+        tipe,
+        nominal,
+        keterangan
+      });
+
+      saveState();
+      renderHutangTable();
+      showToast('Catatan hutang/piutang berhasil disimpan!');
+
+      const modalEl = document.getElementById('hutangModal');
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+    }
+
+    function deleteHutang(id) {
+      showConfirmModal(
+        'Hapus Catatan',
+        'Apakah Anda yakin ingin menghapus catatan ini?',
+        function() {
+          debts = debts.filter(d => d.id !== id);
+          saveState();
+          renderHutangTable();
+          showToast('Catatan berhasil dihapus.');
+        }
+      );
+    }
+
+    // --- LAPORAN MANAGEMENT ---
+    function filterLaporan(e) {
+      e.preventDefault();
+      const start = document.getElementById('filter-start-date').value;
+      const end = document.getElementById('filter-end-date').value;
+      const katId = document.getElementById('filter-kategori').value;
+
+      document.getElementById('rep-start-date').innerText = start;
+      document.getElementById('rep-end-date').innerText = end;
+
+      let katLabel = 'SEMUA KATEGORI';
+      if (katId !== 'semua') {
+        const found = categories.find(c => c.id == katId);
+        if (found) katLabel = found.name.toUpperCase();
+      }
+      document.getElementById('rep-kategori').innerText = katLabel;
+
+      const tbody = document.getElementById('laporan-table-body');
+      tbody.innerHTML = '';
+
+      const filtered = transactions.filter(t => {
+        const inDateRange = t.tanggal >= start && t.tanggal <= end;
+        const inKat = (katId === 'semua') || (t.kategoriId == katId);
+        return inDateRange && inKat;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Tidak ditemukan data transaksi pada periode tanggal tersebut.</td></tr>`;
+        return;
+      }
+
+      let totalPem = 0;
+      let totalPeng = 0;
+
+      filtered.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+      filtered.forEach((t, index) => {
+        const isPem = t.jenis === 'pemasukan';
+        if (isPem) totalPem += Number(t.nominal);
+        else totalPeng += Number(t.nominal);
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${t.tanggal}</td>
+            <td>${t.kategoriName}</td>
+            <td>${t.keterangan || '-'}</td>
+            <td class="text-end fw-semibold text-success">${isPem ? formatRupiah(t.nominal) : '-'}</td>
+            <td class="text-end fw-semibold text-danger">${!isPem ? formatRupiah(t.nominal) : '-'}</td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML += `
+        <tr class="fw-bold table-light">
+          <td colspan="4" class="text-end">TOTAL :</td>
+          <td class="text-end text-success fs-6">${formatRupiah(totalPem)}</td>
+          <td class="text-end text-danger fs-6">${formatRupiah(totalPeng)}</td>
+        </tr>
+      `;
+    }
+
+    function exportPDF() {
+      if (typeof jspdf === 'undefined') {
+        showToast('Library jsPDF tidak tersedia!', 'error');
+        return;
+      }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(16);
+      doc.text("LAPORAN KEUANGAN PRIBADI", 14, 20);
+
+      doc.setFontSize(10);
+      doc.text(`Dari Tanggal : ${document.getElementById('rep-start-date').innerText}`, 14, 28);
+      doc.text(`Sampai Tanggal : ${document.getElementById('rep-end-date').innerText}`, 14, 34);
+      doc.text(`Kategori : ${document.getElementById('rep-kategori').innerText}`, 14, 40);
+
+      let y = 50;
+      doc.setFontSize(11);
+      doc.text("Laporan Keuangan Pribadi telah berhasil dicetak.", 14, y);
+
+      doc.save(`Laporan_Keuangan_${new Date().toISOString().split('T')[0]}.pdf`);
+      showToast('Laporan PDF berhasil diunduh!');
+    }
+
+    function printReport() {
+      window.print();
+    }
+
+    // --- GANTI PASSWORD & ENKRIPSI MD5 ---
+    function updateHashPreview() {
+      const previewInput = document.getElementById('hash-preview');
+      previewInput.value = userPassHash || 'Belum di-set';
+    }
+
+    function changePassword(e) {
+      e.preventDefault();
+      const newP = document.getElementById('new-password').value;
+      const confP = document.getElementById('confirm-password').value;
+
+      if (!newP || !confP) {
+        showToast('Password tidak boleh kosong!', 'error');
+        return;
+      }
+
+      if (newP !== confP) {
+        showToast('Konfirmasi password tidak cocok!', 'error');
+        return;
+      }
+
+      userPassHash = CryptoJS.MD5(newP).toString();
+
+      saveState();
+      updateHashPreview();
+      document.getElementById('new-password').value = '';
+      document.getElementById('confirm-password').value = '';
+
+      showToast('Password berhasil diubah & terenkripsi MD5!');
+    }
+
+    // HELPER DROPDOWNS POPULATE
+    function populateDropdowns() {
+      const katTrxSelect = document.getElementById('trx-kategori');
+      const katFilterSelect = document.getElementById('filter-kategori');
+
+      if (katTrxSelect) {
+        katTrxSelect.innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      }
+
+      if (katFilterSelect) {
+        katFilterSelect.innerHTML = `<option value="semua">- Semua Kategori -</option>` +
+          categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      }
+
+      const rekTrxSelect = document.getElementById('trx-rekening');
+      if (rekTrxSelect) {
+        rekTrxSelect.innerHTML = bankAccounts.map(b => `<option value="${b.id}">${b.bank} - ${b.accountNum} (${b.owner})</option>`).join('');
+      }
+
+      const tabRekSelect = document.getElementById('tab-rekening');
+      if (tabRekSelect) {
+        tabRekSelect.innerHTML = bankAccounts.map(b => `<option value="${b.id}">${b.bank} - ${b.accountNum} (${b.owner})</option>`).join('');
+      }
+    }
+
+    function initApp() {
+      initCalendarWidget();
+      populateDropdowns();
+      updateDashboard();
+
+      const now = new Date();
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+
+      if (document.getElementById('filter-start-date')) {
+        document.getElementById('filter-start-date').value = firstDay;
+        document.getElementById('filter-end-date').value = lastDay;
+      }
+    }
+
+    // AUTO SESSION CHECK ON LOAD
+    window.onload = function() {
+      if (localStorage.getItem('app_is_logged_in') === 'true') {
+        document.getElementById('login-screen').classList.add('d-none');
+        document.getElementById('app-container').classList.remove('d-none');
+        initApp();
+      }
+    };
+  </script>
+</body>
+</html>
